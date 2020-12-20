@@ -1,0 +1,76 @@
+phase_3:
+  int phase_3(char* mystr){
+        long i,i2;
+        int result;
+        char* template;
+
+        //i = rsp + 12;
+        //i2 = rsp + 8;
+        result = 0;
+        if(sscanf(mystr, template, i2, i) <= 1)
+                         explode_bomb();
+        if(i2 > 7)
+            explode_bomb();
+        switch(i2){
+            case 0: 
+                result = 0xcf;  
+                break; 
+            case 1: 
+                result = 0x137; 
+                break;
+            case 2: 
+                result = 0x2c3; 
+                break;
+            case 3: 
+                result = 0x100; 
+                break;
+            case 4: 
+                result = 0x185; 
+                break;
+            case 5: 
+                result = 0xc3;  
+                break;
+            case 6: 
+                result = 0x2aa; 
+                break;
+            case 7: result = 0x147;
+                break;
+            default: 
+                explode_bomb(); 
+                result = 0;
+            }
+        //400fbe   
+        if(i != result)
+            explode_bomb();
+        return result;
+    }
+read_six_numbers:
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

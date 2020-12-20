@@ -1,0 +1,13 @@
+A. 8 bytes 4 bytes 1 byte |1 offset| 2 bytes  8 bytes 8 bytes 4 bytes |4offset| 8 bytes
+B. 48 bytes
+C. struct {
+   int* a;
+   long e;
+   double f;
+   char* h;
+   float b;
+   int g;
+   short d;
+   char c;
+   |1 offset|
+}

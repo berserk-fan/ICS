@@ -1,0 +1,327 @@
+#include "cachelab.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <assert.h>
+#include <limits.h>
+#include <stdbool.h>
+#include <string.h>
+
+FILE * input;
+int isterminator(int c)
+{
+  return c == '\n' || c == ',' || c == ' ' || c == '\t' || c == EOF;
+}
+
+int mgetword(char line[], int maxline)
+{
+  int c, i;
+  i = 0;
+  while( --maxline > 0 && isterminator(c = fgetc(input)))
+	 ;
+  line[i++] = c;
+  while(--maxline > 0 && !isterminator(c = fgetc(input)))
+    line[i++] = c;
+  line[i] = '\0';
+  if(c == EOF)
+    return EOF;j
+  return line[0];
+}
+
+void process();
+void initialize();
+void mfree();
+
+void help(){
+  printf("HELP");
+}
+
+unsigned int hits,miss,evictions;
+unsigned int s,b,E,t;
+int main(int argc, char **argv)
+{
+  const char *filename;
+  FILE *fp;
+
+  for(int i = 1; i < argc; ++i){
+    if(!strcmp("-h", argv[i])){
+      help();
+      exit(0);
+    }
+    if(!strcmp("-s", argv[i])) {
+      if(i == argc - 1) {
+	printf("wrong args");
+	help();
+      }
+      s = (unsigned int) atoi(argv[++i]);
+    }
+    if(!strcmp("-E", argv[i])) {
+      if(i == argc - 1) {
+	printf("wrong args");
+	help();
+      }
+      E = (unsigned int) atoi(argv[++i]);
+    }
+    if(!strcmp("-b", argv[i])) {
+      if(i == argc - 1) {
+	printf("wrong args");
+	help();
+      }
+      b = (unsigned int) atoi(argv[++i]);
+    }
+    if(!strcmp("-t", argv[i])) {
+      if(i == argc - 1) {
+	printf("wrong args");
+	help();
+      }
+      filename = argv[++i];
+    }    
+  }
+  
+  fp = fopen(filename, "r");
+  if (fp == NULL) {
+      perror("Error while opening the file.\n");
+      exit(EXIT_FAILURE);
+  }
+  
+  input = fp;
+  initialize();
+  process(fp);
+  mfree();
+  printSummary(hits, misses, evictions);
+  return 0;
+}
+/***************************************************************************/
+
+#define WORDSIZE 100
+
+void load(char * addr,unsigned int size);
+void modify(char * addr,unsigned int size);
+void store(char * addr,unsigned int size);
+
+void process()
+{
+  int op;
+  char buf[WORDSIZE];
+  char * address;
+  unsigned int size;
+  
+  size = 0;
+  while((op = mgetword(buf, WORDSIZE)) != EOF) {
+    mgetword(buf, WORDSIZE);
+    address = (char *) strtol(buf, NULL, 16);
+    mgetword(buf, WORDSIZE);
+    size = (unsigned int) atoi(buf);
+    switch(op) {
+    case 'M':
+      printf("M %lx, %u", (unsigned long) address, size);
+      modify(address, size);
+      break;
+    case 'L':
+      printf("L %lx, %u", (unsigned long) address, size);
+      load(address, size);
+      break;
+    case 'S':
+      printf("S %lx, %u", (unsigned long) address, size);
+      store(address, size);
+      break;
+    case 'I':
+      break;
+    default:
+      printf("error!");
+      break;
+    }
+    printf("\n");
+  }    
+}
+
+/******************************************************************************/
+#define E_test 8
+#define s_test 5
+#define b_test 9  
+
+struct cache_line_{
+  unsigned long tag;
+  unsigned long age;
+  bool modified;
+  char data[];
+};
+typedef struct cache_line_ cache_line;
+typedef cache_line** cache_set;
+typedef cache_set* cache_t;
+
+cache_t cash;
+
+cache_line * make_cache_line(unsigned int);
+void initialize()
+{
+  unsigned int S, B;
+  int i,j;
+  
+  t = 64 - s - b;
+  S = 1 << s;
+  B = 1 << b;
+  
+  if((cash = (cache_set *) malloc(sizeof(cache_set) * S)) == NULL) {
+    printf("Error. Can't allocate memory!");
+    exit(1);
+  }
+  for(i = 0; i < S; ++i){
+    if((cash[i] = (cache_line **) malloc(sizeof(cache_line *) * E)) == NULL) {
+      printf("Error. Can't allocate memory!");
+      exit(1);
+    }
+    for(j = 0; j < E; ++j) {
+      cash[i][j] = make_cache_line(B);
+    }
+  }
+}
+
+cache_line * make_cache_line(unsigned int B)
+{
+  cache_line * c;
+  if((c = malloc(sizeof(cache_line) + B * sizeof(char))) == NULL) {
+      printf("Error. Can't allocate memory!");
+      exit(1);
+  }
+  c->age = 0;
+  return c;
+}
+
+void mfree()
+{
+  cache_t c;
+  unsigned int S;
+  int i,j;
+  c = cash;
+  S = 1 << s;
+  for(i = 0; i < S; ++i){
+    for(j = 0; j < E; ++j){
+      free(c[i][j]);
+    }
+    free(c[i]);
+  }
+  free(c);
+}
+
+/******************************************************************************/
+unsigned long age = 0;
+
+cache_line* pull_from_memory(char * addr);
+void load(char * addr,unsigned int size)
+{
+  pull_from_memory(addr);
+  return;
+}
+
+void store(char * addr,unsigned int size)
+{
+  cache_line* f_line = pull_from_memory(addr);
+  f_line->modified = true;
+  return;
+}
+
+void modify(char * addr, unsigned int size)
+{
+  load(addr,size);
+  store(addr,size);
+}
+
+void copy_line_from_memory(char *, char*);
+void write_back(cache_line *, unsigned int);
+cache_line* pull_from_memory(char * addr){
+  unsigned long block_offset, set_number, i;
+  unsigned long helper;
+  unsigned long addr_long, tag;
+  unsigned long min_age;
+  cache_set set;
+  cache_line* line_to_load;
+  /* char *data, *data_start; */
+  
+  age++;
+  addr_long = (unsigned long) addr;
+  //find block_offset
+  helper = 1;
+  for(i = 0; i < (b - 1); ++i) {
+    helper = helper | (helper << 1);
+  }
+
+  block_offset =  (addr_long & helper);
+  assert(block_offset < (1 << b));
+  addr_long >>= b;
+  
+  //find set_numeber
+  helper = 1;
+  for(i = 0; i < (s - 1); ++i) {
+    helper = helper | (helper << 1);
+  }
+  
+  set_number = (addr_long & helper);
+  assert(set_number <= (1 << s));
+  addr_long >>= s;
+  
+  //find tag
+  helper = 1;
+  for(i = 0; i < (t - 1); ++i) {
+    helper = helper | (helper << 1);
+  }
+  tag = (addr_long & helper);
+  
+  //find_value algorithm
+  set = cash[set_number];
+  
+  //find LRU element
+  min_age = ULONG_MAX;
+  for(i = 0; i < E; ++i) {
+    if((set[i]->tag) == tag && (set[i]->age) != 0) {
+      hits++;
+      printf(" hit");
+      set[i]->age = age;
+      return set[i];
+    }
+    
+    if(set[i]->age <= min_age){
+      line_to_load = set[i];
+      min_age = set[i]->age;
+      if(min_age == 0){
+	break;
+      }
+    }
+  }
+
+  //if not found then miss
+  misses++;
+  printf(" miss");
+
+  //load data to cache;
+  line_to_load->tag = tag;
+
+  //load from memory
+  /* data = line_to_load->data; */  
+  /* data_start = (char*) (((tag << s) | set_number) << b); */
+  /* read_line_from_memory(data_start, data);*/
+
+  //if age != 0 then it was initialized. thus eviction and write back
+  //chages if was modified
+  if(min_age != 0){
+    evictions++;
+    printf(" eviction");
+    if(line_to_load->modified == true)
+      write_back(line_to_load, set_number);
+  }
+
+  line_to_load->modified = false;
+  line_to_load->age = age;
+  return line_to_load;
+}
+
+//dummy function
+void write_back(cache_line * line_to_write, unsigned int cache_number){
+}
+
+//dummy function
+void copy_line_from_memory(char *from, char* to){
+  /*  B = 1 << b; */
+  /* for(j = 0; j < B; ++j){ */
+    /* data[i] = data_start[i]; */
+  /* } */
+}

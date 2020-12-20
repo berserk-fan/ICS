@@ -1,0 +1,22 @@
+A)struct {
+	char	*a; 0
+	short	b;  8 |6 offset|
+	double	c;  16
+	char	d;  24|3 offset|
+	float	e;  28
+	char	f;  32|7 offset|
+	long	g;  40
+	int	h;  48
+} rec;
+
+B)total is 56 bytes
+C) struct {
+   char * a; 0
+   long g;   8
+   double c; 16
+   int h;    24
+   float e;  28
+   short b;  32
+   char d;   34
+   char f;   35 |offset |
+}

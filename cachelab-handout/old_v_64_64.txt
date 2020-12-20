@@ -1,0 +1,100 @@
+/*
+
+  int i,j,r,c;
+  int tmp1,tmp2,tmp3,tmp4,tmp5,tmp6,tmp7,tmp8;
+
+  if(M == 32 && N == 32){  
+    for(i = 0; i < 4; ++i) {
+      for(r = 0; r < 32; r++){
+	c = i*8;
+	tmp1 = A[r][c];
+	tmp2 = A[r][c+1];
+	tmp3 = A[r][c+2];
+	tmp4 = A[r][c+3];
+	tmp5 = A[r][c+4];
+	tmp6 = A[r][c+5];
+	tmp7 = A[r][c+6];
+	tmp8 = A[r][c+7];
+
+	B[c][r] = tmp1;
+	B[c+1][r] = tmp2;
+	B[c+2][r] = tmp3;
+	B[c+3][r] = tmp4;
+	B[c+4][r] = tmp5;
+	B[c+5][r] = tmp6;
+	B[c+6][r] = tmp7;
+	B[c+7][r] = tmp8;
+      }
+    } 
+  }
+  if(M == 64 && N == 64){
+    for(i = 0; i < 64; i+=8) {
+      for(j = 0; j < 64; j+=8) {
+	for(r = j; r < j + 8; ++r){
+	  tmp1 = A[r][i];
+	  tmp2 = A[r][i+1];
+	  tmp3 = A[r][i+2];
+	  tmp4 = A[r][i+3];
+	  tmp5 = A[r][i+4];
+	  tmp6 = A[r][i+5];
+	  tmp7 = A[r][i+6];
+	  tmp8 = A[r][i+7];
+	  
+	  B[i][r] = tmp1;
+	  B[i+1][r] = tmp2;
+	  B[i+2][r] = tmp3;
+	  B[i+3][r] = tmp4;
+	  
+	  if(r < 56){
+	    B[i+4][r+8] = tmp5;
+	    B[i+5][r+8] = tmp6;
+	    B[i+6][r+8] = tmp7;
+	    B[i+7][r+8] = tmp8;
+	  }else{
+	    B[i+8][r-56] = tmp5;
+	    B[i+9][r-56] = tmp6;
+	    B[i+10][r-56] = tmp7;
+	    B[i+11][r-56] = tmp8;
+	  }
+	}
+	if(r == 64){
+	  for(c = 0; c < 8 ; ++c){
+	    tmp1 = B[i+8][c];
+	    tmp2 = B[i+9][c];
+	    tmp3 = B[i+10][c];
+	    tmp4 = B[i+11][c];
+
+	    B[i+4][c + 56] = tmp1;
+	    B[i+5][c + 56] = tmp2;
+	    B[i+6][c + 56] = tmp3;
+	    B[i+7][c + 56] = tmp4;
+	  }
+	}else{
+	  for(c = r; c < r+8; ++c){
+	    tmp1 = B[i+4][c];
+	    tmp2 = B[i+5][c];
+	    tmp3 = B[i+6][c];
+	    tmp4 = B[i+7][c];
+
+	    B[i+4][c-8] = tmp1;
+	    B[i+5][c-8] = tmp2;
+	    B[i+6][c-8] = tmp3;
+	    B[i+7][c-8] = tmp4;
+	  }
+	}
+      }
+    }
+  }
+}
+*/
+/*
+	  tmp1 = A[r][i];
+	  tmp2 = A[r][i+1];
+	  tmp3 = A[r][i+2];
+	  tmp4 = A[r][i+3];
+
+	  B[i][r] = tmp1;
+	  B[i+1][r] = tmp2;
+	  B[i+2][r] = tmp3;
+	  B[i+3][r] = tmp4;*/
+

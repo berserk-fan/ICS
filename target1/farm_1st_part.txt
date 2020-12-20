@@ -1,0 +1,35 @@
+00000000000005fa <start_farm>:
+ 5fa:	b8 01 00 00 00       	mov    $0x1,%eax
+ 5ff:	c3                   	retq   
+
+0000000000000600 <getval_142>:
+ 600:	b8 fb 78 90 90       	mov    $0x909078fb,%eax
+ 605:	c3                   	retq   
+
+0000000000000606 <addval_273>:
+ 606:	8d 87 48 89 c7 c3    	lea    -0x3c3876b8(%rdi),%eax
+ 60c:	c3                   	retq   
+
+000000000000060d <addval_219>:
+ 60d:	8d 87 51 73 58 90    	lea    -0x6fa78caf(%rdi),%eax
+ 613:	c3                   	retq   
+
+0000000000000614 <setval_237>:
+ 614:	c7 07 48 89 c7 c7    	movl   $0xc7c78948,(%rdi)
+ 61a:	c3                   	retq   
+
+000000000000061b <setval_424>:
+ 61b:	c7 07 54 c2 58 92    	movl   $0x9258c254,(%rdi)
+ 621:	c3                   	retq   
+
+0000000000000622 <setval_470>:
+ 622:	c7 07 63 48 8d c7    	movl   $0xc78d4863,(%rdi)
+ 628:	c3                   	retq   
+
+0000000000000629 <setval_426>:
+ 629:	c7 07 48 89 c7 90    	movl   $0x90c78948,(%rdi)
+ 62f:	c3                   	retq   
+
+0000000000000630 <getval_280>:
+ 630:	b8 29 58 90 c3       	mov    $0xc3905829,%eax
+ 635:	c3                   	retq   

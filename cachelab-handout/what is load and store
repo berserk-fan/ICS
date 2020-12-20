@@ -1,0 +1,3 @@
+load is read;
+store is write;
+modify is read then write; eg increment instruction

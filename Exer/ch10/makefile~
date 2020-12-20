@@ -1,0 +1,2 @@
+4 : 4.o csapp.o
+	gcc -o 4 a

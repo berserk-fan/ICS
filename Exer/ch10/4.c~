@@ -1,0 +1,9 @@
+#include <csapp.h>
+
+int main() {
+  int status;
+  pid_t pid;
+
+  printf("Start\n");
+  pid = Fork();
+  printf("%d\n", !pid);

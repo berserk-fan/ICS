@@ -1,0 +1,11 @@
+T_avg_rotation = 1*60*2/13000 = 2.3 ms
+T_seek = 6 ms
+T_access = 8.3 ms;
+T_read_one = 4.6 / 5000 = 9.2 * 10^-4 ms;
+T_read = 2048 blocks/ 5000(bl/tracks) * T_full_rotation = 1.88ms
+
+A: Best case: approx 10ms
+B: Random case:
+   	  assume every time a move of head:
+	  T_read = 2048 blocks * (T_access + T_read_one) =
+	  2048 * (8.3 + 920 ns) = 2048 * 8.30000092 approx 16998.402 = 17sec;
